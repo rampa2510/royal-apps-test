@@ -1,0 +1,11 @@
+services:
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - AUTH_API_URL=https://candidate-testing.api.royal-apps.io
+      - API_URL=https://candidate-testing.api.royal-apps.io
+      - NODE_ENV=production

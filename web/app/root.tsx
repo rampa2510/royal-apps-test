@@ -1,9 +1,11 @@
 import {
+  json,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 
@@ -22,7 +24,16 @@ export const links: LinksFunction = () => [
   },
 ];
 
+export async function loader() {
+  return json({
+    ENV: {
+      AUTH_API_URL: process.env.AUTH_API_URL,
+    },
+  });
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const data = useLoaderData<typeof loader>();
   return (
     <html lang="en">
       <head>
@@ -36,6 +47,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ScrollRestoration />
         <Scripts />
       </body>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `window.ENV = ${JSON.stringify(
+            data.ENV
+          )}`,
+        }}
+      />
     </html>
   );
 }
