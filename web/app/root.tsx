@@ -8,8 +8,11 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
+import { AppProvider } from '@shopify/polaris';
+import '@shopify/polaris/build/esm/styles.css';
+import './tailwind.css'
 
-import "./tailwind.css";
+
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -22,18 +25,14 @@ export const links: LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
+  {
+    rel: 'stylesheet',
+    href: '@shopify/polaris/build/esm/styles.css',
+  },
 ];
 
-export async function loader() {
-  return json({
-    ENV: {
-      AUTH_API_URL: process.env.AUTH_API_URL,
-    },
-  });
-}
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const data = useLoaderData<typeof loader>();
   return (
     <html lang="en">
       <head>
@@ -47,17 +46,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ScrollRestoration />
         <Scripts />
       </body>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `window.ENV = ${JSON.stringify(
-            data.ENV
-          )}`,
-        }}
-      />
     </html>
   );
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <AppProvider i18n={{}}>
+      <Outlet />
+    </AppProvider>
+  )
+    ;
 }

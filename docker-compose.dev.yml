@@ -9,7 +9,7 @@ services:
       - ./web:/app
       - /app/node_modules
     environment:
-      - AUTH_API_URL=https://candidate-testing.api.royal-apps.io
+      - API_URL=https://candidate-testing.api.royal-apps.io
       - NODE_ENV=development
     stdin_open: true
     tty: true
