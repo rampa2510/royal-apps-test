@@ -2,7 +2,7 @@
 
 A comprehensive book management application built with Remix, featuring author management, book CRUD operations, user profile management, and activity logging. This application follows clean architecture principles and can be deployed using Docker or run locally.
 
-![Royal Apps Books](public/logo.png)
+![Royal Apps Books](web/public/logo.png)
 
 ## Project Overview
 
