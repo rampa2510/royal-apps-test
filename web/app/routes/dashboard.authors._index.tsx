@@ -4,12 +4,11 @@ import {
   useLoaderData,
   useSearchParams,
   useSubmit,
-  Form,
+  useNavigate,
 } from "@remix-run/react";
 import {
   Card,
   Page,
-  DataTable,
   TextField,
   Button,
   Select,
@@ -18,6 +17,8 @@ import {
   Text,
   BlockStack,
   InlineStack,
+  IndexTable,
+  useIndexResourceState,
 } from "@shopify/polaris";
 import { SearchIcon } from "@shopify/polaris-icons";
 import { useCallback, useState, useEffect } from "react";
@@ -73,11 +74,30 @@ export default function AuthorsPage() {
   const { authors, params, success } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
+  const navigate = useNavigate();
 
   const [searchValue, setSearchValue] = useState(params.query || "");
   const [debouncedSearchValue, setDebouncedSearchValue] = useState(
     params.query || ""
   );
+
+  // Format authors for IndexTable
+  const formattedAuthors = authors.items.map((author) => ({
+    id: author.id.toString(),
+    firstName: author.first_name,
+    lastName: author.last_name,
+    birthday: formatDate(author.birthday),
+    gender: author.gender,
+    placeOfBirth: author.place_of_birth,
+  }));
+
+  const resourceName = {
+    singular: "author",
+    plural: "authors",
+  };
+
+  const { selectedResources, allResourcesSelected, handleSelectionChange } =
+    useIndexResourceState(formattedAuthors);
 
   // Sort options
   const sortOptions = [
@@ -205,15 +225,10 @@ export default function AuthorsPage() {
     [searchParams, submit, setSearchParams]
   );
 
-  // Prepare table data
-  const rows = authors.items.map((author) => [
-    author?.id.toString(),
-    author?.first_name,
-    author?.last_name,
-    formatDate(author?.birthday),
-    author?.gender,
-    author?.place_of_birth,
-  ]);
+  // Handle row click
+  const handleRowClick = (id: string) => {
+    navigate(`/dashboard/authors/${id}`);
+  };
 
   return (
     <Page title="Authors">
@@ -268,27 +283,45 @@ export default function AuthorsPage() {
               </InlineStack>
             </div>
 
-            {authors.items.length > 0 ? (
-              <DataTable
-                columnContentTypes={[
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                ]}
+            {formattedAuthors.length > 0 ? (
+              <IndexTable
+                resourceName={resourceName}
+                itemCount={formattedAuthors.length}
+                selectedItemsCount={
+                  allResourcesSelected ? "All" : selectedResources.length
+                }
+                onSelectionChange={handleSelectionChange}
+                selectable={false}
                 headings={[
-                  "ID",
-                  "First Name",
-                  "Last Name",
-                  "Birthday",
-                  "Gender",
-                  "Place of Birth",
+                  { title: "ID" },
+                  { title: "First Name" },
+                  { title: "Last Name" },
+                  { title: "Birthday" },
+                  { title: "Gender" },
+                  { title: "Place of Birth" },
                 ]}
-                rows={rows}
-                hoverable
-              />
+                hasZebraStriping
+              >
+                {formattedAuthors.map((author, index) => (
+                  <IndexTable.Row
+                    id={author.id}
+                    key={author.id}
+                    position={index}
+                    onClick={() => handleRowClick(author.id)}
+                  >
+                    <IndexTable.Cell>
+                      <Text variant="bodyMd" as="span">
+                        {author.id}
+                      </Text>
+                    </IndexTable.Cell>
+                    <IndexTable.Cell>{author.firstName}</IndexTable.Cell>
+                    <IndexTable.Cell>{author.lastName}</IndexTable.Cell>
+                    <IndexTable.Cell>{author.birthday}</IndexTable.Cell>
+                    <IndexTable.Cell>{author.gender}</IndexTable.Cell>
+                    <IndexTable.Cell>{author.placeOfBirth}</IndexTable.Cell>
+                  </IndexTable.Row>
+                ))}
+              </IndexTable>
             ) : (
               <div className="py-12">
                 <EmptyState heading="No authors found" image="">

@@ -1,4 +1,4 @@
-import type { AuthorResponse, AuthorQueryParams } from "~/types/author";
+import type { AuthorResponse, AuthorQueryParams, Author } from "~/types/author";
 import { getServerApiClient } from "../utils/api-server";
 
 export async function getAuthors(
@@ -16,4 +16,13 @@ export async function getAuthors(
 
   const url = `/authors?${queryParams.toString()}`;
   return await apiClient.get<AuthorResponse>(url);
+}
+
+export async function getAuthor(
+  id: string,
+  accessToken: string
+): Promise<Author> {
+  const apiClient = getServerApiClient(accessToken);
+  const url = `/authors/${id}`;
+  return await apiClient.get<Author>(url);
 }

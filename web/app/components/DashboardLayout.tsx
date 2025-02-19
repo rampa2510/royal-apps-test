@@ -42,10 +42,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             onClick: toggleIsLoading,
           },
           {
-            url: "/dashboard/author",
+            url: "/dashboard/authors",
             label: "Authors",
             icon: BlogIcon,
-            selected: location.pathname === "/dashboard/author",
+            selected: location.pathname === "/dashboard/authors",
             onClick: toggleIsLoading,
           },
           {
