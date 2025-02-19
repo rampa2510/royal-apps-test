@@ -51,6 +51,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const limit = parseInt(url.searchParams.get("limit") || "12");
   const page = parseInt(url.searchParams.get("page") || "1");
   const created = url.searchParams.get("created") || false;
+  const edited = url.searchParams.get("edited") === "true";
 
   const params: BookQueryParams = {
     query,
@@ -70,6 +71,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       deleteError: url.searchParams.get("deleteError"),
       error: false,
       created,
+      edited,
     });
   } catch (error) {
     console.error("Failed to fetch books:", error);
@@ -83,6 +85,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         offset: 0,
         order_by: orderBy,
         direction,
+        edited: false,
       },
       params,
       success: false,
@@ -90,6 +93,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       deleteSuccess: false,
       deleteError: true,
       created: false,
+      edited: false,
     });
   }
 }
@@ -125,8 +129,16 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function BooksPage() {
-  const { books, params, success, error, deleteSuccess, deleteError, created } =
-    useLoaderData<typeof loader>();
+  const {
+    books,
+    params,
+    success,
+    error,
+    deleteSuccess,
+    deleteError,
+    created,
+    edited,
+  } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
   const navigate = useNavigate();
@@ -334,6 +346,19 @@ export default function BooksPage() {
       }}
     >
       <BlockStack gap="500">
+        {edited && (
+          <Banner
+            tone="success"
+            onDismiss={() => {
+              const newParams = new URLSearchParams(searchParams);
+              newParams.delete("edited");
+              setSearchParams(newParams);
+            }}
+          >
+            Book updated successfully.
+          </Banner>
+        )}
+
         {created && (
           <Banner
             tone="success"

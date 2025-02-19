@@ -19,39 +19,51 @@ import {
   BlockStack,
   InlineStack,
   Text,
+  SkeletonBodyText,
 } from "@shopify/polaris";
-import { useState, useCallback } from "react";
-import { createBook } from "~/services/book.service";
+import { useState, useCallback, useEffect } from "react";
+import { updateBook, getBook } from "~/services/book.service";
 import { getAuthors } from "~/services/author.service";
 import { getAccessToken } from "~/utils/session.server";
-import type { BookCreate } from "~/types/book";
+import type { Book, BookCreate } from "~/types/book";
 import type { AuthorResponse } from "~/types/author";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const accessToken = await getAccessToken(request);
   if (!accessToken) {
     throw new Error("Authentication required");
   }
 
-  try {
-    // Load all authors for the dropdown
-    const params = {
-      orderBy: "id",
-      direction: "ASC",
-      limit: 100, // Increase limit to get more authors
-      page: 1,
-    };
+  const bookId = params.id;
+  if (!bookId) {
+    throw new Error("Book ID is required");
+  }
 
-    const authors = await getAuthors(params, accessToken);
+  try {
+    // Load book data and authors for the dropdown in parallel
+    const [book, authors] = await Promise.all([
+      getBook(bookId, accessToken),
+      getAuthors(
+        {
+          orderBy: "id",
+          direction: "ASC",
+          limit: 100,
+          page: 1,
+        },
+        accessToken
+      ),
+    ]);
 
     return json({
+      book,
       authors,
       success: true,
       error: null,
     });
   } catch (error) {
-    console.error("Failed to load authors:", error);
+    console.error(`Failed to load book ${bookId} or authors:`, error);
     return json({
+      book: null,
       authors: {
         items: [],
         total_results: 0,
@@ -63,18 +75,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
         direction: "ASC",
       },
       success: false,
-      error: "Failed to load authors for selection",
+      error: "Failed to load book data or authors for selection",
     });
   }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   const accessToken = await getAccessToken(request);
   if (!accessToken) {
     throw new Error("Authentication required");
   }
 
+  const bookId = params.id;
+  if (!bookId) {
+    return json({
+      success: false,
+      error: "Book ID is required",
+      errors: { _form: "Book ID is require" },
+    });
+  }
+
   const formData = await request.formData();
+
+  console.log("Form data received:", Object.fromEntries(formData));
 
   // Extract and validate data
   const authorId = formData.get("authorId") as string;
@@ -96,7 +119,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const bookData: BookCreate = {
+    const bookData: Partial<BookCreate> = {
       author: {
         id: parseInt(authorId),
       },
@@ -108,58 +131,73 @@ export async function action({ request }: ActionFunctionArgs) {
       number_of_pages: numberOfPages ? parseInt(numberOfPages) : undefined,
     };
 
-    const newBook = await createBook(bookData, accessToken);
+    console.log("Updating book data:", { bookId, bookData });
+
+    const updatedBook = await updateBook(bookId, bookData, accessToken);
 
     // Redirect to the books list page with success message
-    return redirect("/dashboard/books?created=true");
+    return redirect("/dashboard/books?edited=true");
   } catch (error) {
-    console.error("Failed to create book:", error);
+    console.error(`Failed to update book ${bookId}:`, error);
     return json({
       errors: {
-        _form: "Failed to create book. Please try again.",
+        _form: "Failed to update book. Please try again.",
       },
       values: Object.fromEntries(formData),
     });
   }
 }
 
-export default function NewBookPage() {
-  const { authors, success, error } = useLoaderData<typeof loader>();
+export default function EditBookPage() {
+  const { book, authors, success, error } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const navigate = useNavigate();
 
   const isSubmitting = navigation.state === "submitting";
+  const isLoading = navigation.state === "loading";
 
   // Form state
-  const [title, setTitle] = useState<string>(
-    (actionData?.values?.title as string) || ""
-  );
-  const [authorId, setAuthorId] = useState<string>(
-    (actionData?.values?.authorId as string) || ""
-  );
-  const [releaseDate, setReleaseDate] = useState(
-    (actionData?.values?.releaseDate as string) || ""
-  );
-  const [description, setDescription] = useState<string>(
-    (actionData?.values?.description as string) || ""
-  );
-  const [isbn, setIsbn] = useState((actionData?.values?.isbn as string) || "");
-  const [format, setFormat] = useState(
-    (actionData?.values?.format as string) || ""
-  );
-  const [numberOfPages, setNumberOfPages] = useState(
-    (actionData?.values?.numberOfPages as string) || ""
-  );
+  const [title, setTitle] = useState<string>("");
+  const [authorId, setAuthorId] = useState<string>("");
+  const [releaseDate, setReleaseDate] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [isbn, setIsbn] = useState<string>("");
+  const [format, setFormat] = useState<string>("");
+  const [numberOfPages, setNumberOfPages] = useState<string>("");
+
+  // Initialize form with book data once loaded
+  useEffect(() => {
+    if (book) {
+      setTitle(book.title || "");
+      setAuthorId(book.author?.id?.toString() || "");
+      setReleaseDate(book.release_date || "");
+      setDescription(book.description || "");
+      setIsbn(book.isbn || "");
+      setFormat(book.format || "");
+      setNumberOfPages(book.number_of_pages?.toString() || "");
+    }
+  }, [book]);
 
   // Date picker state
   const [{ month, year }, setDate] = useState({
     month: new Date().getMonth(),
     year: new Date().getFullYear(),
   });
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    releaseDate ? new Date(releaseDate) : undefined
-  );
+
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+  // Initialize date picker with book release date once loaded
+  useEffect(() => {
+    if (book?.release_date) {
+      const date = new Date(book.release_date);
+      setSelectedDate(date);
+      setDate({
+        month: date.getMonth(),
+        year: date.getFullYear(),
+      });
+    }
+  }, [book]);
 
   // Format author options for select dropdown
   const authorOptions = authors.items.map((author) => ({
@@ -213,19 +251,34 @@ export default function NewBookPage() {
     navigate("/dashboard/books");
   }, [navigate]);
 
+  if (isLoading || !book) {
+    return (
+      <Page
+        title="Edit Book"
+        backAction={{ content: "Books", url: "/dashboard/books" }}
+      >
+        <Card>
+          <div className="p-6">
+            <SkeletonBodyText lines={10} />
+          </div>
+        </Card>
+      </Page>
+    );
+  }
+
   return (
     <Page
-      title="Add New Book"
+      title={`Edit Book: ${book.title}`}
       backAction={{ content: "Books", url: "/dashboard/books" }}
     >
       <BlockStack gap="500">
         {!success && (
           <Banner tone="critical">
-            <p>{error || "Failed to load author data"}</p>
+            <p>{error || "Failed to load book data"}</p>
           </Banner>
         )}
 
-        {actionData?.errors?._form && (
+        {actionData?.errors._form && (
           <Banner tone="critical">
             <p>{actionData.errors._form}</p>
           </Banner>
@@ -315,7 +368,7 @@ export default function NewBookPage() {
                     Cancel
                   </Button>
                   <Button variant="primary" submit loading={isSubmitting}>
-                    Add Book
+                    Save Changes
                   </Button>
                 </div>
               </FormLayout>
