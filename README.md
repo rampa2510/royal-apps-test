@@ -234,7 +234,7 @@ This builds the application for production and starts the server at http://local
    - The token is securely stored in server-side session cookies
    - All subsequent API requests include this token for authorization
    
-   ![Login page](assests/login.png)
+   ![Login page](assets/login.png)
 
 2. **Dashboard Layout**
    - After login, users are redirected to the dashboard
@@ -245,36 +245,36 @@ This builds the application for production and starts the server at http://local
    - Protected routes ensure authentication is required
 
 
-   ![Dashboard layout](assests/dashboardLayout.png)
+   ![Dashboard layout](assets/dashboardLayout.png)
 
 3. **Author Management**
    - Author listing with pagination, filtering, and sorting
-   ![List Author](assests/listAuthors.png)
+   ![List Author](assets/listAuthors.png)
    - Author detail view showing all books by that author
-   ![Details Author](assests/detailAuthor.png)
+   ![Details Author](assets/detailAuthor.png)
    - Delete functionality (when an author has no books)
-   ![Delete Author](assests/deleteAuthor.png)
+   ![Delete Author](assets/deleteAuthor.png)
 
 
 
 4. **Book Management**
    - Book listing with advanced filtering and pagination
-   ![List Book](assests/listBook.png)
+   ![List Book](assets/listBook.png)
    - Add new books with author selection via dropdown
-   ![Add Book](assests/addBook.png)
+   ![Add Book](assets/addBook.png)
    - Edit existing book details (title, description, ISBN, etc.)
-   ![Edit Book](assests/editBook.png)
+   ![Edit Book](assets/editBook.png)
    - Delete books individually
-   ![Delete Book](assests/deleteBook.png)
+   ![Delete Book](assets/deleteBook.png)
    - Form validation and error handling
 
 5. **Profile Management**
    - View personal information in profile dashboard
-   ![Profile](assests/profile.png)
+   ![Profile](assets/profile.png)
    - Edit profile details with validation
-   ![Edit Profile](assests/editProfile.png)
+   ![Edit Profile](assets/editProfile.png)
    - Real-time activity logging tracking user actions
-   ![Activty Log Profile](assests/activityLog.png)
+   ![Activty Log Profile](assets/activityLog.png)
    - Secure logout functionality
 
 6. **Activity Logging**
