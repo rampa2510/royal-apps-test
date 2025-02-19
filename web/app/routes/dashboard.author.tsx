@@ -82,11 +82,7 @@ export default function AuthorsPage() {
   // Sort options
   const sortOptions = [
     { label: "ID", value: "id" },
-    { label: "First Name", value: "first_name" },
-    { label: "Last Name", value: "last_name" },
     { label: "Birthday", value: "birthday" },
-    { label: "Gender", value: "gender" },
-    { label: "Place of Birth", value: "place_of_birth" },
   ];
 
   const directionOptions = [
