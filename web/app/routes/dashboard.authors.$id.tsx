@@ -62,7 +62,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (intent === "delete") {
     try {
       await deleteAuthor(authorId, accessToken);
-      return redirect("/dashboard/authors");
+      return redirect("/dashboard/authors?log=deleteAuthor");
     } catch (error) {
       console.error(`Failed to delete author ${authorId}:`, error);
       return json({
@@ -81,14 +81,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
     try {
       await deleteBook(bookId, accessToken);
 
-      // Reload the current author data to reflect the book deletion
-      const author = await getAuthor(authorId, accessToken);
-      return json({
-        author,
-        success: true,
-        bookDeleted: true,
-        authorId,
-      });
+      return redirect("/dashboard/authors?log=deleteBook");
+
     } catch (error) {
       console.error(`Failed to delete book ${bookId}:`, error);
       return json({
@@ -138,17 +132,17 @@ export default function AuthorDetailsPage() {
       primaryAction={
         hasNoBooks
           ? {
-              content: "Delete Author",
-              icon: DeleteIcon,
-              destructive: true,
-              onAction: handleDeleteClick,
-            }
+            content: "Delete Author",
+            icon: DeleteIcon,
+            destructive: true,
+            onAction: handleDeleteClick,
+          }
           : undefined
       }
     >
       <BlockStack gap="1000">
         {bookDeleted && (
-          <Banner tone="success" onDismiss={() => {}}>
+          <Banner tone="success" onDismiss={() => { }}>
             Book was successfully deleted.
           </Banner>
         )}

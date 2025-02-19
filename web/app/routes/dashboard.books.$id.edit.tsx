@@ -136,7 +136,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const updatedBook = await updateBook(bookId, bookData, accessToken);
 
     // Redirect to the books list page with success message
-    return redirect("/dashboard/books?edited=true");
+    return redirect("/dashboard/books?edited=true&log=editBook");
   } catch (error) {
     console.error(`Failed to update book ${bookId}:`, error);
     return json({

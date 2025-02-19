@@ -111,7 +111,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const newBook = await createBook(bookData, accessToken);
 
     // Redirect to the books list page with success message
-    return redirect("/dashboard/books?created=true");
+    return redirect("/dashboard/books?created=true&log=createBook");
   } catch (error) {
     console.error("Failed to create book:", error);
     return json({

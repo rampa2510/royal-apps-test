@@ -328,6 +328,7 @@ export default function BooksPage() {
     // Update URL params to show success message after the action completes
     const newParams = new URLSearchParams(searchParams);
     newParams.set("deleteSuccess", "true");
+    newParams.set("log", "deleteBook");
     setSearchParams(newParams);
   }, [bookToDelete, submit, searchParams, setSearchParams]);
 
