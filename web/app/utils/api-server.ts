@@ -40,7 +40,22 @@ class ServerApiClient {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      return (await response.json()) as T;
+      // For DELETE or when response has no content, return empty object
+      if (
+        method === "DELETE" ||
+        response.status === 204 ||
+        response.headers.get("content-length") === "0"
+      ) {
+        return {} as T;
+      }
+
+      // Only parse as JSON if there's content to parse
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return (await response.json()) as T;
+      }
+
+      return {} as T;
     } catch (error) {
       console.error("API request failed:", error);
       throw error;

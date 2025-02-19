@@ -26,3 +26,12 @@ export async function getAuthor(
   const url = `/authors/${id}`;
   return await apiClient.get<Author>(url);
 }
+
+export async function deleteAuthor(
+  id: string,
+  accessToken: string
+): Promise<void> {
+  const apiClient = getServerApiClient(accessToken);
+  const url = `/authors/${id}`;
+  return await apiClient.delete<void>(url);
+}
