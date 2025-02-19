@@ -109,7 +109,7 @@ export default function BookList({ books }: BookListProps) {
   ));
 
   return (
-    <Box paddingBlockEnd="400">
+    <Box paddingBlockEnd="1000">
       <Card>
         <IndexTable
           resourceName={resourceName}
@@ -147,7 +147,7 @@ export default function BookList({ books }: BookListProps) {
         ]}
       >
         <Modal.Section>
-          <BlockStack gap="400">
+          <BlockStack gap="1000">
             <Text as="p">
               Are you sure you want to delete "{bookToDelete?.title}"? This
               action cannot be undone.

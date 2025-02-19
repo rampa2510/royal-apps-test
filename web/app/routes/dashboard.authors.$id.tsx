@@ -146,7 +146,7 @@ export default function AuthorDetailsPage() {
           : undefined
       }
     >
-      <BlockStack gap="400">
+      <BlockStack gap="1000">
         {bookDeleted && (
           <Banner tone="success" onDismiss={() => {}}>
             Book was successfully deleted.
@@ -181,7 +181,7 @@ export default function AuthorDetailsPage() {
 
                   <Divider />
 
-                  <BlockStack gap="400">
+                  <BlockStack gap="1000">
                     <div>
                       <Text variant="bodyMd" as="p" fontWeight="semibold">
                         Birthday

@@ -6,6 +6,7 @@ import {
   BookIcon,
   BlogIcon,
   ProfileIcon,
+  PlusIcon,
 } from "@shopify/polaris-icons";
 import { useState, useCallback } from "react";
 import { Form } from "@remix-run/react";
@@ -30,6 +31,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   );
   const loadingMarkup = isLoading ? <Loading /> : null;
 
+  // Check if current path is books-related
+  const isBooksPath = location.pathname.startsWith("/dashboard/books");
+
   const navigationMarkup = (
     <Navigation location={location.pathname}>
       <Navigation.Section
@@ -45,15 +49,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             url: "/dashboard/authors",
             label: "Authors",
             icon: BlogIcon,
-            selected: location.pathname === "/dashboard/authors",
+            selected: location.pathname.startsWith("/dashboard/authors"),
             onClick: toggleIsLoading,
           },
           {
             url: "/dashboard/books",
             label: "Books",
             icon: BookIcon,
-            selected: location.pathname === "/dashboard/books",
+            selected: isBooksPath,
             onClick: toggleIsLoading,
+            subNavigationItems: [
+              {
+                url: "/dashboard/books",
+                excludePaths: ["/dashboard/books/new"],
+                label: "All Books",
+              },
+              {
+                url: "/dashboard/books/new",
+                label: "Add Book",
+              },
+            ],
           },
           {
             url: "/dashboard/profile",
