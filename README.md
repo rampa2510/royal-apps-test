@@ -172,7 +172,6 @@ Create a `.env` file in the `web` directory with the following content:
 
 ```
 API_URL=https://candidate-testing.api.royal-apps.io
-SESSION_SECRET=your-secret-key
 ```
 
 The API_URL is essential as it points to the Royal Apps Candidate Testing API.
@@ -191,7 +190,7 @@ This starts the application in development mode with:
 - Hot module replacement for instant updates
 - Volume mounting for live code changes 
 - Development-specific optimizations
-- Access via http://localhost:3000
+- Access via http://localhost:5173
 
 #### Production Environment
 
@@ -214,7 +213,7 @@ cd web
 npm install
 npm run dev
 ```
-This starts the application in development mode with hot module replacement at http://localhost:3000.
+This starts the application in development mode with hot module replacement at http://localhost:5173.
 
 #### Production Mode
 
@@ -234,6 +233,8 @@ This builds the application for production and starts the server at http://local
    - Upon successful authentication, a JWT token is obtained
    - The token is securely stored in server-side session cookies
    - All subsequent API requests include this token for authorization
+   
+   ![Login page](assests/login.png)
 
 2. **Dashboard Layout**
    - After login, users are redirected to the dashboard
@@ -243,23 +244,37 @@ This builds the application for production and starts the server at http://local
      - Main content area for displaying routes
    - Protected routes ensure authentication is required
 
+
+   ![Dashboard layout](assests/dashboardLayout.png)
+
 3. **Author Management**
    - Author listing with pagination, filtering, and sorting
+   ![List Author](assests/listAuthors.png)
    - Author detail view showing all books by that author
+   ![Details Author](assests/detailAuthor.png)
    - Delete functionality (when an author has no books)
-   - Fully responsive table layouts with Polaris components
+   ![Delete Author](assests/deleteAuthor.png)
+
+
 
 4. **Book Management**
    - Book listing with advanced filtering and pagination
+   ![List Book](assests/listBook.png)
    - Add new books with author selection via dropdown
+   ![Add Book](assests/addBook.png)
    - Edit existing book details (title, description, ISBN, etc.)
+   ![Edit Book](assests/editBook.png)
    - Delete books individually
+   ![Delete Book](assests/deleteBook.png)
    - Form validation and error handling
 
 5. **Profile Management**
    - View personal information in profile dashboard
+   ![Profile](assests/profile.png)
    - Edit profile details with validation
+   ![Edit Profile](assests/editProfile.png)
    - Real-time activity logging tracking user actions
+   ![Activty Log Profile](assests/activityLog.png)
    - Secure logout functionality
 
 6. **Activity Logging**
