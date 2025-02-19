@@ -1,61 +1,105 @@
-import { BookIcon, HomeIcon, PersonIcon } from '@shopify/polaris-icons';
-import { Link, useLocation } from '@remix-run/react';
-import { Icon } from '@shopify/polaris';
+import { Link, useLocation } from "@remix-run/react";
+import type { ReactNode } from "react";
+import { Frame, Navigation, TopBar } from "@shopify/polaris";
+import {
+  HomeIcon,
+  BookIcon,
+  BlogIcon,
+  ProfileIcon,
+} from "@shopify/polaris-icons";
+import { useState, useCallback } from "react";
+import { Form } from "@remix-run/react";
+import { Button } from "@shopify/polaris";
 
-interface LayoutProps {
-  children: React.ReactNode;
+interface DashboardLayoutProps {
+  children: ReactNode;
 }
 
-export function Layout({ children }: LayoutProps) {
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const location = useLocation();
+  const [mobileNavigationActive, setMobileNavigationActive] = useState(false);
 
-  const navigationItems = [
-    {
-      label: 'Authors',
-      icon: HomeIcon,
-      url: '/authors',
-    },
-    {
-      label: 'Books',
-      icon: BookIcon,
-      url: '/books',
-    },
-    {
-      label: 'Profile',
-      icon: PersonIcon,
-      url: '/profile',
-    },
-  ];
+  const toggleMobileNavigationActive = useCallback(
+    () => setMobileNavigationActive((previousState) => !previousState),
+    []
+  );
+
+  const navigationMarkup = (
+    <Navigation location={location.pathname}>
+      <Navigation.Section
+        items={[
+          {
+            url: "/dashboard/home",
+            label: "Home",
+            icon: HomeIcon,
+            selected: location.pathname === "/dashboard/home",
+          },
+          {
+            url: "/dashboard/author",
+            label: "Authors",
+            icon: BlogIcon,
+            selected: location.pathname === "/dashboard/author",
+          },
+          {
+            url: "/dashboard/books",
+            label: "Books",
+            icon: BookIcon,
+            selected: location.pathname === "/dashboard/books",
+          },
+          {
+            url: "/dashboard/profile",
+            label: "Profile",
+            icon: ProfileIcon,
+            selected: location.pathname === "/dashboard/profile",
+          },
+        ]}
+      />
+    </Navigation>
+  );
+
+  const userMenuMarkup = (
+    <div className="flex items-center">
+      <Form method="post" action="/logout">
+        <Button variant="plain" submit>
+          Logout
+        </Button>
+      </Form>
+    </div>
+  );
+
+  const logo = {
+    topBarSource: "/logo.png",
+    url: "/dashboard/home",
+    accessibilityLabel: "Royal Apps Books",
+  };
+
+  const topBarMarkup = (
+    <TopBar
+      showNavigationToggle
+      userMenu={userMenuMarkup}
+      onNavigationToggle={toggleMobileNavigationActive}
+    />
+  );
 
   return (
-    <div className="flex h-screen">
-      <div className="w-64 border-r bg-white">
-        <div className="h-16 flex items-center px-6 border-b">
-          <h1 className="text-lg font-medium">Royal Apps Books</h1>
-        </div>
-        <nav className="p-4">
-          {navigationItems.map((item) => {
-            const isActive = location.pathname === item.url;
-            return (
-              <Link
-                key={item.url}
-                to={item.url}
-                className={`flex items-center space-x-2 px-4 py-2 rounded mb-1 ${isActive
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-              >
-                <Icon source={item.icon} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-      <div className="flex-1 overflow-auto">
-        <div className="p-8">
-          {children}
-        </div>
+    <div className="h-screen flex flex-col">
+      <div className="flex-1 flex overflow-hidden mt-10">
+        <aside className="w-64 border-r border-gray-200 bg-white relative">
+          <div className="absolute inset-0 overflow-hidden">
+            <Frame
+              topBar={topBarMarkup}
+              logo={logo}
+              navigation={navigationMarkup}
+              showMobileNavigation={mobileNavigationActive}
+              onNavigationDismiss={toggleMobileNavigationActive}
+              skipToContentTarget={undefined}
+            >
+              <div style={{ display: "none" }}></div>
+            </Frame>
+          </div>
+        </aside>
+
+        <main className="flex-1 overflow-auto p-6 bg-gray-50">{children}</main>
       </div>
     </div>
   );

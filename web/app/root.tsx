@@ -5,10 +5,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 import { AppProvider } from "@shopify/polaris";
+import enTranslations from "@shopify/polaris/locales/en.json";
 import "@shopify/polaris/build/esm/styles.css";
 import "./tailwind.css";
 
@@ -45,7 +45,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <AppProvider i18n={{}}>
+    <AppProvider i18n={enTranslations}>
       <Outlet />
     </AppProvider>
   );

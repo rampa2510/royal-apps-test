@@ -13,7 +13,6 @@ export default defineConfig({
     host: true,
     port: 5173,
   },
-  envDir: "../",
   plugins: [
     remix({
       future: {
