@@ -17,6 +17,8 @@ import { getAuthor, deleteAuthor } from "~/services/author.service";
 import { getAccessToken } from "~/utils/session.server";
 import { formatDate } from "~/utils/date-formatter";
 import { useState, useCallback } from "react";
+import { deleteBook } from "~/services/book.service";
+import BookList from "~/components/BookList";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const accessToken = await getAccessToken(request);
@@ -31,13 +33,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   try {
     const author = await getAuthor(authorId, accessToken);
-    return json({ author, success: true, error: null });
+    return json({ author, success: true, error: null, bookDeleted: false });
   } catch (error) {
     console.error(`Failed to fetch author ${authorId}:`, error);
     return json({
       success: false,
       error: "Failed to fetch author details",
       author: null,
+      bookDeleted: false,
     });
   }
 }
@@ -46,17 +49,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent");
 
+  const accessToken = await getAccessToken(request);
+  if (!accessToken) {
+    throw new Error("Authentication required");
+  }
+
+  const authorId = params.id;
+  if (!authorId) {
+    return json({ success: false, error: "Author ID is required" });
+  }
+
   if (intent === "delete") {
-    const accessToken = await getAccessToken(request);
-    if (!accessToken) {
-      throw new Error("Authentication required");
-    }
-
-    const authorId = params.id;
-    if (!authorId) {
-      return json({ success: false, error: "Author ID is required" });
-    }
-
     try {
       await deleteAuthor(authorId, accessToken);
       return redirect("/dashboard/authors");
@@ -69,11 +72,41 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
   }
 
+  if (intent === "deleteBook") {
+    const bookId = formData.get("bookId") as string;
+    if (!bookId) {
+      return json({ success: false, error: "Book ID is required" });
+    }
+
+    try {
+      await deleteBook(bookId, accessToken);
+
+      // Reload the current author data to reflect the book deletion
+      const author = await getAuthor(authorId, accessToken);
+      return json({
+        author,
+        success: true,
+        bookDeleted: true,
+        authorId,
+      });
+    } catch (error) {
+      console.error(`Failed to delete book ${bookId}:`, error);
+      return json({
+        success: false,
+        error: "Failed to delete book.",
+        authorId,
+        bookDeleted: false,
+      });
+    }
+  }
+
   return json({ success: false, error: "Invalid action" });
 }
 
 export default function AuthorDetailsPage() {
-  const { author, success, error } = useLoaderData<typeof loader>();
+  const { author, success, error, bookDeleted } = useLoaderData<
+    typeof loader & { bookDeleted: boolean }
+  >();
   const submit = useSubmit();
   const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -114,6 +147,12 @@ export default function AuthorDetailsPage() {
       }
     >
       <BlockStack gap="400">
+        {bookDeleted && (
+          <Banner tone="success" onDismiss={() => {}}>
+            Book was successfully deleted.
+          </Banner>
+        )}
+
         {!success && (
           <Card>
             <div className="p-4">
@@ -186,19 +225,7 @@ export default function AuthorDetailsPage() {
                     <Text variant="headingMd" as="h3">
                       Books
                     </Text>
-                    {author?.books && author.books.length > 0 ? (
-                      <ul className="mt-4 space-y-2">
-                        {author.books.map((book) => (
-                          <li key={book.id}>
-                            {book.title} (
-                            {book.release_date
-                              ? formatDate(book.release_date)
-                              : "Unknown date"}
-                            )
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
+                    {hasNoBooks && (
                       <div className="mt-4">
                         <Banner tone="info">
                           <Text variant="bodyMd" as="p">
@@ -206,6 +233,18 @@ export default function AuthorDetailsPage() {
                             author.
                           </Text>
                         </Banner>
+                      </div>
+                    )}
+
+                    {!hasNoBooks && (
+                      <div className="mt-4">
+                        <BookList
+                          //@ts-ignore
+                          books={author.books}
+                          //@ts-ignore
+                          authorId={author.id.toString()}
+                          authorName={`${author?.first_name} ${author?.last_name}`}
+                        />
                       </div>
                     )}
                   </div>
