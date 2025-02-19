@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@remix-run/react";
 import type { ReactNode } from "react";
-import { Frame, Navigation, TopBar } from "@shopify/polaris";
+import { Frame, Loading, Navigation, TopBar } from "@shopify/polaris";
 import {
   HomeIcon,
   BookIcon,
@@ -18,11 +18,17 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const location = useLocation();
   const [mobileNavigationActive, setMobileNavigationActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleMobileNavigationActive = useCallback(
     () => setMobileNavigationActive((previousState) => !previousState),
     []
   );
+  const toggleIsLoading = useCallback(
+    () => setIsLoading((isLoading) => !isLoading),
+    []
+  );
+  const loadingMarkup = isLoading ? <Loading /> : null;
 
   const navigationMarkup = (
     <Navigation location={location.pathname}>
@@ -33,24 +39,28 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             label: "Home",
             icon: HomeIcon,
             selected: location.pathname === "/dashboard/home",
+            onClick: toggleIsLoading,
           },
           {
             url: "/dashboard/author",
             label: "Authors",
             icon: BlogIcon,
             selected: location.pathname === "/dashboard/author",
+            onClick: toggleIsLoading,
           },
           {
             url: "/dashboard/books",
             label: "Books",
             icon: BookIcon,
             selected: location.pathname === "/dashboard/books",
+            onClick: toggleIsLoading,
           },
           {
             url: "/dashboard/profile",
             label: "Profile",
             icon: ProfileIcon,
             selected: location.pathname === "/dashboard/profile",
+            onClick: toggleIsLoading,
           },
         ]}
       />
@@ -94,6 +104,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               onNavigationDismiss={toggleMobileNavigationActive}
               skipToContentTarget={undefined}
             >
+              {loadingMarkup}
               <div style={{ display: "none" }}></div>
             </Frame>
           </div>
